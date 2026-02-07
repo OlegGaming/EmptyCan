@@ -1,0 +1,39 @@
+name: Build and Deploy WebGL 🚀
+
+on:
+  push:
+    branches: [ main ] # Запускать билд при каждом пуше в ветку main
+
+jobs:
+  build:
+    name: Build for WebGL 🛠️
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Скачиваем проект из репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      # 2. Кешируем папку Library (чтобы билды шли быстрее)
+      - name: Cache Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-WebGL
+
+      # 3. Делаем сам билд через GameCI
+      - name: Build project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: WebGL
+
+      # 4. Заливаем результат в GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: build/WebGL/WebGL # Путь к папке билда
+          branch: gh-pages # Ветка, где будет лежать сайт игры
